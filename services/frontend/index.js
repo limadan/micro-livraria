@@ -35,6 +35,62 @@ function newBook(book) {
     return div;
 }
 
+function getBookById(){
+    const inputId = document.getElementById('product-id').value;
+    const books = document.querySelector('.books');
+    books.innerHTML = ""
+
+    if(!inputId){
+        fetch('http://localhost:3000/products')
+        .then((data) => {
+            if (data.ok) {
+                return data.json();
+            }
+            throw data.statusText;
+        })
+        .then((data) => {
+            if (data) {
+                data.forEach((book) => {
+                    books.appendChild(newBook(book));
+                });
+
+                document.querySelectorAll('.button-shipping').forEach((btn) => {
+                    btn.addEventListener('click', (e) => {
+                        const id = e.target.getAttribute('data-id');
+                        const cep = document.querySelector(`.book[data-id="${id}"] input`).value;
+                        calculateShipping(id, cep);
+                    });
+                });
+
+                document.querySelectorAll('.button-buy').forEach((btn) => {
+                    btn.addEventListener('click', (e) => {
+                        swal('Compra de livro', 'Sua compra foi realizada com sucesso', 'success');
+                    });
+                });
+            }
+        })
+        .catch((err) => {
+            swal('Erro', 'Erro ao listar os produtos', 'error');
+            console.error(err);
+        });
+        return
+    }
+    fetch('http://localhost:3000/product/' + inputId)
+        .then((data) => {
+            if (data.ok) {
+                return data.json();
+            }
+            throw data.statusText;
+        })
+        .then((data) => {
+            books.appendChild(newBook(data));
+        })
+        .catch((err) => {
+            swal('Erro', 'Erro ao consultar frete', 'error');
+            console.error(err);
+        });
+}
+
 function calculateShipping(id, cep) {
     fetch('http://localhost:3000/shipping/' + cep)
         .then((data) => {
